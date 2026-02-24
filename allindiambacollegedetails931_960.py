@@ -5225,7 +5225,14 @@ def scrape_placement_report(driver,URLS):
         }
     try:
         # Wait for PGP placements section to load
-        wait.until(EC.presence_of_element_located((By.ID, "placement_section_about_baseCourse_101")))
+        try:
+            wait.until(
+                EC.presence_of_element_located(
+                    (By.XPATH, "//*[contains(@id,'placement_section_about_baseCourse')]")
+                )
+            )
+        except TimeoutException:
+            print("Placement section not found for this college.")
         
         # Scroll to the section
         driver.execute_script("window.scrollTo(0, 2000);")
@@ -6774,7 +6781,18 @@ def scrape_ranking(driver, URLS):
     
 
     try:
-        intl_section = wait.until(EC.presence_of_element_located((By.ID, "rp_section_international_ranking")))
+        try:
+            intl_section = wait.until(
+                EC.presence_of_element_located(
+                    (By.ID, "rp_section_international_ranking")
+                )
+            )
+            
+            # scrape ranking here
+
+        except TimeoutException:
+            print("International ranking section not found.")
+            intl_section = None
         driver.execute_script("arguments[0].scrollIntoView(true);", intl_section)
         time.sleep(3)  # Give extra time for loading
         
