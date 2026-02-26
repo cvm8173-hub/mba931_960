@@ -176,7 +176,12 @@ def scrape_college_info(driver,URLS):
     data["college_info"]["college_name"] = driver.find_element(By.TAG_NAME, "h1").text.strip()
 
     # ================= LOCATION + CITY =================
-    loc = driver.find_element(By.CSS_SELECTOR, "span.f90eb6").text
+    loc_elem = driver.find_elements(By.CSS_SELECTOR, "span.f90eb6")
+
+    if loc_elem:
+        loc = loc_elem[0].text
+    else:
+        loc = None
     if "," in loc:
         l, c = loc.split(",", 1)
         data["college_info"]["location"] = l.strip()
