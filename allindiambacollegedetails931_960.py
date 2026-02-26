@@ -75,10 +75,10 @@ def create_driver():
     options.add_argument("--disable-gpu")
     options.add_argument("--window-size=1920,1080")
 
-    options.page_load_strategy = "eager"   # 🔥 ADD THIS
+    # options.page_load_strategy = "eager"   # 🔥 ADD THIS
 
-    prefs = {"profile.managed_default_content_settings.images": 2}
-    options.add_experimental_option("prefs", prefs)  # 🔥 Disable images
+    # prefs = {"profile.managed_default_content_settings.images": 2}
+    # options.add_experimental_option("prefs", prefs)  # 🔥 Disable images
 
     options.binary_location = "/usr/bin/chromium"
 
