@@ -782,9 +782,12 @@ def scrape_college_info(driver,URLS):
         print("Extracting fees and eligibility data...")
         
         # Wait for the section
-        fees_section = wait.until(
-            EC.presence_of_element_located((By.ID, "ovp_section_fees_and_eligibility"))
-        )
+        try:
+            fees_section = wait.until(
+                EC.presence_of_element_located((By.ID, "ovp_section_fees_and_eligibility"))
+            )
+        except:
+            pass
         
         # Scroll to section
         driver.execute_script("arguments[0].scrollIntoView({behavior: 'smooth', block: 'center'});", fees_section)
@@ -1079,10 +1082,13 @@ def scrape_college_info(driver,URLS):
 
     # ================= STUDENT REVIEWS SECTION =================
     try:
-      
-        reviews_container = wait.until(
-            EC.presence_of_element_located((By.CSS_SELECTOR, ".a2eb03"))
-        )
+        try:
+
+            reviews_container = wait.until(
+                EC.presence_of_element_located((By.CSS_SELECTOR, ".a2eb03"))
+            )
+        except:
+            pass
         
         # Scroll to make all reviews visible
         driver.execute_script("arguments[0].scrollIntoView({behavior: 'smooth', block: 'center'});", reviews_container)
@@ -4230,9 +4236,12 @@ def scrape_admission_overview(driver, URLS):
 
     try:
         # Wait for admission process section
-        admission_process_section = wait.until(
-            EC.presence_of_element_located((By.ID, "admission_section_admission_process"))
-        )
+        try:
+            admission_process_section = wait.until(
+                EC.presence_of_element_located((By.ID, "admission_section_admission_process"))
+            )
+        except:
+            pass
         
         # Get the entire HTML of the section
         section_html = admission_process_section.get_attribute('outerHTML')
@@ -4691,7 +4700,10 @@ def scrape_placement_report(driver,URLS):
         print("⚠️ Error in college header section: ")
     try:
         # Wait for placement section to load
-        wait.until(EC.presence_of_element_located((By.ID, "placement_section_overview")))
+        try:
+            wait.until(EC.presence_of_element_located((By.ID, "placement_section_overview")))
+        except:
+            pass
         
         # Scroll to placement section
         driver.execute_script("window.scrollTo(0, 1000);")
@@ -4949,7 +4961,10 @@ def scrape_placement_report(driver,URLS):
         }
     try:
         # Wait for average package section to load
-        wait.until(EC.presence_of_element_located((By.ID, "placement_section_average_package")))
+        try:
+            wait.until(EC.presence_of_element_located((By.ID, "placement_section_average_package")))
+        except:
+            pass
         
         # Scroll to the section
         driver.execute_script("window.scrollTo(0, 1500);")
@@ -5268,7 +5283,10 @@ def scrape_placement_report(driver,URLS):
             pass
         
         # Get the section HTML
-        pgp_section = driver.find_element(By.ID, "placement_section_about_baseCourse_101")
+        try:
+           pgp_section = driver.find_element(By.ID, "placement_section_about_baseCourse_101")
+        except:
+            pass
         section_html = driver.execute_script("""
             var section = arguments[0];
             return section.outerHTML;
@@ -6795,8 +6813,12 @@ def scrape_ranking(driver, URLS):
         except TimeoutException:
             print("International ranking section not found.")
             intl_section = None
-        driver.execute_script("arguments[0].scrollIntoView(true);", intl_section)
-        time.sleep(3)  # Give extra time for loading
+        if intl_section:
+            driver.execute_script("arguments[0].scrollIntoView(true);", intl_section)
+            time.sleep(3) 
+        else:
+            print("Intl section not found, skipping scroll")
+        # Give extra time for loading
         
         # Expand the section
         expand_all_sections()
