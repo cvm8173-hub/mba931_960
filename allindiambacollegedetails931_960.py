@@ -180,12 +180,13 @@ def scrape_college_info(driver,URLS):
 
     if loc_elem:
         loc = loc_elem[0].text
+        if "," in loc:
+            l, c = loc.split(",", 1)
+            data["college_info"]["location"] = l.strip()
+            data["college_info"]["city"] = c.strip()
     else:
         loc = None
-    if "," in loc:
-        l, c = loc.split(",", 1)
-        data["college_info"]["location"] = l.strip()
-        data["college_info"]["city"] = c.strip()
+
 
     # ================= RATING =================
     try:
