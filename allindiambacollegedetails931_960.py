@@ -109,7 +109,7 @@ def scrape_college_info(driver,URLS):
         driver = webdriver.Chrome(options=options)
         driver.get(URLS["college_info"])
     
-    wait = WebDriverWait(driver, 40)
+    wait = WebDriverWait(driver, 20)
 
     data = {
         "college_info": {
