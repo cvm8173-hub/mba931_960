@@ -782,17 +782,22 @@ def scrape_college_info(driver,URLS):
         print("Extracting fees and eligibility data...")
         
         # Wait for the section
+        fees_section = None  # always define variable
+
         try:
             fees_section = wait.until(
                 EC.presence_of_element_located((By.ID, "ovp_section_fees_and_eligibility"))
             )
         except:
-            pass
-        
-        # Scroll to section
-        driver.execute_script("arguments[0].scrollIntoView({behavior: 'smooth', block: 'center'});", fees_section)
-        time.sleep(1)
-        
+            print("Fees section not found, skipping scroll")
+
+        # Scroll only if element exists
+        if fees_section:
+            driver.execute_script(
+                "arguments[0].scrollIntoView({behavior: 'smooth', block: 'center'});",
+                fees_section
+            )
+            time.sleep(1)
         # Initialize data structure
         data["fees_and_eligibility"] = {
             "overview": "",
@@ -1089,10 +1094,12 @@ def scrape_college_info(driver,URLS):
             )
         except:
             pass
-        
-        # Scroll to make all reviews visible
-        driver.execute_script("arguments[0].scrollIntoView({behavior: 'smooth', block: 'center'});", reviews_container)
-        time.sleep(2)
+        if reviews_container:
+            driver.execute_script(
+                "arguments[0].scrollIntoView({behavior: 'smooth', block: 'center'});",
+                reviews_container
+            )
+            time.sleep(1)
         
         # Initialize data structure
         data["student_reviews"] = {
@@ -4240,11 +4247,12 @@ def scrape_admission_overview(driver, URLS):
             admission_process_section = wait.until(
                 EC.presence_of_element_located((By.ID, "admission_section_admission_process"))
             )
+            section_html = admission_process_section.get_attribute('outerHTML')
         except:
             pass
         
         # Get the entire HTML of the section
-        section_html = admission_process_section.get_attribute('outerHTML')
+
         
         # Use BeautifulSoup to parse and extract all text
         from bs4 import BeautifulSoup
@@ -4740,7 +4748,10 @@ def scrape_placement_report(driver,URLS):
         time.sleep(2)
         
         # Now get the COMPLETE updated HTML
-        placement_section = driver.find_element(By.ID, "placement_section_overview")
+        try:
+           placement_section = driver.find_element(By.ID, "placement_section_overview")
+        except:
+            pass
         
         # Get the complete HTML with JavaScript execution
         section_html = driver.execute_script("""
@@ -4988,11 +4999,17 @@ def scrape_placement_report(driver,URLS):
             pass
         
         # Get the section HTML
-        avg_package_section = driver.find_element(By.ID, "placement_section_average_package")
-        section_html = driver.execute_script("""
-            var section = arguments[0];
-            return section.outerHTML;
-        """, avg_package_section)
+        try:
+            avg_package_section = driver.find_element(By.ID, "placement_section_average_package")
+        except:
+            pass
+        if avg_package_section:
+            section_html = driver.execute_script("""
+                var section = arguments[0];
+                return section.outerHTML;
+            """, avg_package_section)
+        else:
+            pass
     
    
         soup = BeautifulSoup(section_html, 'html.parser')
