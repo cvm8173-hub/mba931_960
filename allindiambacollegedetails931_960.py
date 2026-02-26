@@ -103,7 +103,7 @@ def scrape_college_info(driver,URLS):
         driver = webdriver.Chrome(options=options)
         driver.get(URLS["college_info"])
     
-    wait = WebDriverWait(driver, 6)
+    wait = WebDriverWait(driver, 20)
 
     data = {
         "college_info": {
@@ -1446,7 +1446,7 @@ def scrape_courses(driver, URLS):
         driver = webdriver.Chrome(options=options)
         driver.get(URLS["courses"])
     
-    wait = WebDriverWait(driver, 6)
+    wait = WebDriverWait(driver, 20)
     
     # Wait for page to load completely
     time.sleep(2)
@@ -2394,7 +2394,7 @@ def scrape_faqs_section(driver):
  
     try:
         # Wait for FAQ section to load
-        wait = WebDriverWait(driver, 6)
+        wait = WebDriverWait(driver, 20)
         
         # Wait for FAQ section to be present - try multiple selectors
         faq_section = None
@@ -2806,7 +2806,7 @@ def scrape_fees(driver, URLS):
         driver = webdriver.Chrome(options=options)
         driver.get(URLS["fees"])
     
-    wait = WebDriverWait(driver, 6)
+    wait = WebDriverWait(driver, 20)
     
     college_info = {
         "college_name": None,
@@ -3281,7 +3281,7 @@ def scrape_review_summary(driver, URLS):
     except selenium.common.exceptions.InvalidSessionIdException:
         driver = webdriver.Chrome(options=options)
         driver.get(URLS["reviews"])
-    wait = WebDriverWait(driver, 6)
+    wait = WebDriverWait(driver, 20)
     
     college_info = {
         "college_name": None,
@@ -3689,7 +3689,7 @@ def scrape_admission_overview(driver, URLS):
         driver = webdriver.Chrome(options=options)
         driver.get(URLS["admission"])
     
-    wait = WebDriverWait(driver, 6)
+    wait = WebDriverWait(driver, 20)
     
     college_info = {
         "college_name": None,
@@ -4562,7 +4562,7 @@ def scrape_placement_report(driver,URLS):
         driver = webdriver.Chrome(options=options)
         driver.get(URLS["placement"])
     
-    wait = WebDriverWait(driver, 6)
+    wait = WebDriverWait(driver, 20)
     college_info = {
         "college_name": None,
         "logo": None,
@@ -5607,7 +5607,7 @@ def scrape_cutoff(driver, URLS):
         driver = webdriver.Chrome(options=options)
         driver.get(URLS["cutoff"])
 
-    wait = WebDriverWait(driver, 6)
+    wait = WebDriverWait(driver, 20)
     college_info = {
         "college_name": None,
         "logo": None,
@@ -6052,7 +6052,7 @@ def scrape_ranking(driver, URLS):
         driver.get(URLS["ranking"])
     
 
-    wait = WebDriverWait(driver, 6)  # Increased wait time
+    wait = WebDriverWait(driver, 20)  # Increased wait time
     
     college_info = {
         "college_name": None,
@@ -6995,7 +6995,7 @@ def scrape_mini_clips(driver, URLS):
         driver.get(URLS["gallery"])
     
 
-    wait = WebDriverWait(driver, 6)
+    wait = WebDriverWait(driver, 20)
     
     college_info = {
         "college_name": None,
@@ -7523,7 +7523,7 @@ def scrape_hostel_campus_js(driver, URLS):
         driver = webdriver.Chrome(options=options)
         driver.get(URLS["infrastructure"])
     
-    wait = WebDriverWait(driver, 6)
+    wait = WebDriverWait(driver, 20)
     time.sleep(5)  # allow JS to load
     soup = BeautifulSoup(driver.page_source, "html.parser")
 
@@ -8346,7 +8346,7 @@ def parse_faculty_full_html(driver,URLS):
     except selenium.common.exceptions.InvalidSessionIdException:
         driver = webdriver.Chrome(options=options)
         driver.get(URLS["faculty"])
-    wait = WebDriverWait(driver, 6)
+    wait = WebDriverWait(driver, 20)
 
     college_info = {
         "college_name": None,
@@ -8521,7 +8521,7 @@ def parse_faculty_full_html(driver,URLS):
     except Exception as e:
         print(" Error in college header section: ")
     driver.get(URLS["faculty"])
-    wait = WebDriverWait(driver, 6)
+    wait = WebDriverWait(driver, 20)
 
     # section = wait.until(
     #     EC.presence_of_element_located(
@@ -8613,7 +8613,7 @@ def parse_faculty_reviews(driver,URLS):
     except selenium.common.exceptions.InvalidSessionIdException:
         driver = webdriver.Chrome(options=options)
         driver.get(URLS["faculty"])
-    wait = WebDriverWait(driver, 6)
+    wait = WebDriverWait(driver, 20)
 
     try:
         section = WebDriverWait(driver, 5).until(
@@ -8681,7 +8681,7 @@ def parse_review_summarisation_all_tabs(driver,URLS):
         driver = webdriver.Chrome(options=options)
         driver.get(URLS["faculty"])
     
-    wait = WebDriverWait(driver, 6)
+    wait = WebDriverWait(driver, 20)
 
 
     try:
@@ -8755,7 +8755,7 @@ def parse_articles_section(driver,URLS):
         driver = webdriver.Chrome(options=options)
         driver.get(URLS["compare"])
     
-    wait = WebDriverWait(driver, 6)
+    wait = WebDriverWait(driver, 20)
 
     college_info = {
         "college_name": None,
@@ -8930,7 +8930,7 @@ def parse_articles_section(driver,URLS):
     except Exception as e:
         print(" Error in college header section: ")
     driver.get(URLS["compare"])
-    wait = WebDriverWait(driver, 6)
+    wait = WebDriverWait(driver, 20)
 
     try:
         section = wait.until(
@@ -8989,7 +8989,7 @@ def parse_faq_scholarships_section(driver, URLS):
     except selenium.common.exceptions.InvalidSessionIdException:
         driver = webdriver.Chrome(options=options)
         driver.get(URLS["scholarships"]) 
-    wait = WebDriverWait(driver, 6)
+    wait = WebDriverWait(driver, 20)
 
     college_info = {
         "college_name": None,
@@ -9164,7 +9164,7 @@ def parse_faq_scholarships_section(driver, URLS):
     except Exception as e:
         print(" Error in college header section: ")
     driver.get(URLS["scholarships"])
-    wait = WebDriverWait(driver, 6)
+    wait = WebDriverWait(driver, 20)
     # section = wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, ".wikkiContents.faqAccordian")))
     try:
         section = wait.until(
