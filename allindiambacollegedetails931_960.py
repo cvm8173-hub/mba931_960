@@ -35,16 +35,16 @@ BASE_URL = [
   "https://www.shiksha.com/college/midas-school-of-entrepreneurship-pune-38303",
   "https://www.shiksha.com/college/vidya-dayini-college-of-information-technology-hyderabad-62219",
   "https://www.shiksha.com/college/metas-adventist-college-surat-69131",
-  "https://www.shiksha.com/college/centre-for-liberal-and-advanced-studies-sage-university-bhopal-231840",
-  "https://www.shiksha.com/college/mcc-boyd-tandon-school-of-business-chennai-215781",
-  "https://www.shiksha.com/college/sri-ramakrishna-college-of-arts-and-science-coimbatore-8330",
-  "https://www.shiksha.com/university/iec-university-solan-35967",
-  "https://www.shiksha.com/college/mother-teresa-pg-college-ranga-reddy-62157",
-  "https://www.shiksha.com/college/dr-k-v-subba-reddy-institute-of-technology-kvsrit-kurnool-43355",
-  "https://www.shiksha.com/college/banarsidas-chandiwala-institute-of-professional-studies-dwarka-delhi-42806",
-  "https://www.shiksha.com/university/cdlu-chaudhary-devi-lal-university-haryana-other-23525",
-  "https://www.shiksha.com/college/jis-college-of-engineering-kalyani-kolkata-38245",
-  "https://www.shiksha.com/college/matoshri-college-of-management-research-centre-eklahare-nashik-64245",
+#   "https://www.shiksha.com/college/centre-for-liberal-and-advanced-studies-sage-university-bhopal-231840",
+#   "https://www.shiksha.com/college/mcc-boyd-tandon-school-of-business-chennai-215781",
+#   "https://www.shiksha.com/college/sri-ramakrishna-college-of-arts-and-science-coimbatore-8330",
+#   "https://www.shiksha.com/university/iec-university-solan-35967",
+#   "https://www.shiksha.com/college/mother-teresa-pg-college-ranga-reddy-62157",
+#   "https://www.shiksha.com/college/dr-k-v-subba-reddy-institute-of-technology-kvsrit-kurnool-43355",
+#   "https://www.shiksha.com/college/banarsidas-chandiwala-institute-of-professional-studies-dwarka-delhi-42806",
+#   "https://www.shiksha.com/university/cdlu-chaudhary-devi-lal-university-haryana-other-23525",
+#   "https://www.shiksha.com/college/jis-college-of-engineering-kalyani-kolkata-38245",
+#   "https://www.shiksha.com/college/matoshri-college-of-management-research-centre-eklahare-nashik-64245",
 ]
 
 
@@ -69,22 +69,28 @@ def build_urls(BASE_URL):
 def create_driver():
     options = Options()
 
+    # Mandatory for GitHub Actions
     options.add_argument("--headless=new")
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
     options.add_argument("--disable-gpu")
     options.add_argument("--window-size=1920,1080")
 
-    # options.page_load_strategy = "eager"   # 🔥 ADD THIS
+    # Optional but good
+    options.add_argument(
+        "user-agent=Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 "
+        "(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+    )
 
-    # prefs = {"profile.managed_default_content_settings.images": 2}
-    # options.add_experimental_option("prefs", prefs)  # 🔥 Disable images
-
+    # Important for Ubuntu runner
     options.binary_location = "/usr/bin/chromium"
 
     service = Service(ChromeDriverManager().install())
 
-    return webdriver.Chrome(service=service, options=options)
+    return webdriver.Chrome(
+        service=service,
+        options=options
+    )
 
 
 # ---------------- UTILITIES ----------------
@@ -103,7 +109,7 @@ def scrape_college_info(driver,URLS):
         driver = webdriver.Chrome(options=options)
         driver.get(URLS["college_info"])
     
-    wait = WebDriverWait(driver, 15)
+    wait = WebDriverWait(driver, 40)
 
     data = {
         "college_info": {
@@ -176,17 +182,11 @@ def scrape_college_info(driver,URLS):
     data["college_info"]["college_name"] = driver.find_element(By.TAG_NAME, "h1").text.strip()
 
     # ================= LOCATION + CITY =================
-    loc_elem = driver.find_elements(By.CSS_SELECTOR, "span.f90eb6")
-
-    if loc_elem:
-        loc = loc_elem[0].text
-        if "," in loc:
-            l, c = loc.split(",", 1)
-            data["college_info"]["location"] = l.strip()
-            data["college_info"]["city"] = c.strip()
-    else:
-        loc = None
-
+    loc = driver.find_element(By.CSS_SELECTOR, "span.f90eb6").text
+    if "," in loc:
+        l, c = loc.split(",", 1)
+        data["college_info"]["location"] = l.strip()
+        data["college_info"]["city"] = c.strip()
 
     # ================= RATING =================
     try:
@@ -384,14 +384,12 @@ def scrape_college_info(driver,URLS):
 
     for item in data["college_info"]["highlights"]["table"]:
         print(f"  - {item['particular']}: {item['details'][:50]}...")
-    try:
-        wait.until(
-            EC.presence_of_element_located(
-                (By.ID, "ovp_section_popular_courses")
-            )
+
+    wait.until(
+        EC.presence_of_element_located(
+            (By.ID, "ovp_section_popular_courses")
         )
-    except:
-        pass
+    )
 
     # ================= INTRO / SUMMARY =================
     data["intro"] = driver.execute_script("""
@@ -782,22 +780,14 @@ def scrape_college_info(driver,URLS):
         print("Extracting fees and eligibility data...")
         
         # Wait for the section
-        fees_section = None  # always define variable
-
-        try:
-            fees_section = wait.until(
-                EC.presence_of_element_located((By.ID, "ovp_section_fees_and_eligibility"))
-            )
-        except:
-            print("Fees section not found, skipping scroll")
-
-        # Scroll only if element exists
-        if fees_section:
-            driver.execute_script(
-                "arguments[0].scrollIntoView({behavior: 'smooth', block: 'center'});",
-                fees_section
-            )
-            time.sleep(1)
+        fees_section = wait.until(
+            EC.presence_of_element_located((By.ID, "ovp_section_fees_and_eligibility"))
+        )
+        
+        # Scroll to section
+        driver.execute_script("arguments[0].scrollIntoView({behavior: 'smooth', block: 'center'});", fees_section)
+        time.sleep(1)
+        
         # Initialize data structure
         data["fees_and_eligibility"] = {
             "overview": "",
@@ -1087,19 +1077,14 @@ def scrape_college_info(driver,URLS):
 
     # ================= STUDENT REVIEWS SECTION =================
     try:
-        try:
-
-            reviews_container = wait.until(
-                EC.presence_of_element_located((By.CSS_SELECTOR, ".a2eb03"))
-            )
-        except:
-            pass
-        if reviews_container:
-            driver.execute_script(
-                "arguments[0].scrollIntoView({behavior: 'smooth', block: 'center'});",
-                reviews_container
-            )
-            time.sleep(1)
+      
+        reviews_container = wait.until(
+            EC.presence_of_element_located((By.CSS_SELECTOR, ".a2eb03"))
+        )
+        
+        # Scroll to make all reviews visible
+        driver.execute_script("arguments[0].scrollIntoView({behavior: 'smooth', block: 'center'});", reviews_container)
+        time.sleep(2)
         
         # Initialize data structure
         data["student_reviews"] = {
@@ -1446,7 +1431,7 @@ def scrape_courses(driver, URLS):
         driver = webdriver.Chrome(options=options)
         driver.get(URLS["courses"])
     
-    wait = WebDriverWait(driver, 15)
+    wait = WebDriverWait(driver, 20)
     
     # Wait for page to load completely
     time.sleep(2)
@@ -2806,7 +2791,7 @@ def scrape_fees(driver, URLS):
         driver = webdriver.Chrome(options=options)
         driver.get(URLS["fees"])
     
-    wait = WebDriverWait(driver, 15)
+    wait = WebDriverWait(driver, 20)
     
     college_info = {
         "college_name": None,
@@ -3281,7 +3266,7 @@ def scrape_review_summary(driver, URLS):
     except selenium.common.exceptions.InvalidSessionIdException:
         driver = webdriver.Chrome(options=options)
         driver.get(URLS["reviews"])
-    wait = WebDriverWait(driver, 15)
+    wait = WebDriverWait(driver, 20)
     
     college_info = {
         "college_name": None,
@@ -3689,7 +3674,7 @@ def scrape_admission_overview(driver, URLS):
         driver = webdriver.Chrome(options=options)
         driver.get(URLS["admission"])
     
-    wait = WebDriverWait(driver, 15)
+    wait = WebDriverWait(driver, 30)
     
     college_info = {
         "college_name": None,
@@ -4243,16 +4228,12 @@ def scrape_admission_overview(driver, URLS):
 
     try:
         # Wait for admission process section
-        try:
-            admission_process_section = wait.until(
-                EC.presence_of_element_located((By.ID, "admission_section_admission_process"))
-            )
-            section_html = admission_process_section.get_attribute('outerHTML')
-        except:
-            pass
+        admission_process_section = wait.until(
+            EC.presence_of_element_located((By.ID, "admission_section_admission_process"))
+        )
         
         # Get the entire HTML of the section
-
+        section_html = admission_process_section.get_attribute('outerHTML')
         
         # Use BeautifulSoup to parse and extract all text
         from bs4 import BeautifulSoup
@@ -4708,10 +4689,7 @@ def scrape_placement_report(driver,URLS):
         print("⚠️ Error in college header section: ")
     try:
         # Wait for placement section to load
-        try:
-            wait.until(EC.presence_of_element_located((By.ID, "placement_section_overview")))
-        except:
-            pass
+        wait.until(EC.presence_of_element_located((By.ID, "placement_section_overview")))
         
         # Scroll to placement section
         driver.execute_script("window.scrollTo(0, 1000);")
@@ -4748,10 +4726,7 @@ def scrape_placement_report(driver,URLS):
         time.sleep(2)
         
         # Now get the COMPLETE updated HTML
-        try:
-           placement_section = driver.find_element(By.ID, "placement_section_overview")
-        except:
-            pass
+        placement_section = driver.find_element(By.ID, "placement_section_overview")
         
         # Get the complete HTML with JavaScript execution
         section_html = driver.execute_script("""
@@ -4972,10 +4947,7 @@ def scrape_placement_report(driver,URLS):
         }
     try:
         # Wait for average package section to load
-        try:
-            wait.until(EC.presence_of_element_located((By.ID, "placement_section_average_package")))
-        except:
-            pass
+        wait.until(EC.presence_of_element_located((By.ID, "placement_section_average_package")))
         
         # Scroll to the section
         driver.execute_script("window.scrollTo(0, 1500);")
@@ -4999,17 +4971,11 @@ def scrape_placement_report(driver,URLS):
             pass
         
         # Get the section HTML
-        try:
-            avg_package_section = driver.find_element(By.ID, "placement_section_average_package")
-        except:
-            pass
-        if avg_package_section:
-            section_html = driver.execute_script("""
-                var section = arguments[0];
-                return section.outerHTML;
-            """, avg_package_section)
-        else:
-            pass
+        avg_package_section = driver.find_element(By.ID, "placement_section_average_package")
+        section_html = driver.execute_script("""
+            var section = arguments[0];
+            return section.outerHTML;
+        """, avg_package_section)
     
    
         soup = BeautifulSoup(section_html, 'html.parser')
@@ -5259,14 +5225,7 @@ def scrape_placement_report(driver,URLS):
         }
     try:
         # Wait for PGP placements section to load
-        try:
-            wait.until(
-                EC.presence_of_element_located(
-                    (By.XPATH, "//*[contains(@id,'placement_section_about_baseCourse')]")
-                )
-            )
-        except TimeoutException:
-            print("Placement section not found for this college.")
+        wait.until(EC.presence_of_element_located((By.ID, "placement_section_about_baseCourse_101")))
         
         # Scroll to the section
         driver.execute_script("window.scrollTo(0, 2000);")
@@ -5300,10 +5259,7 @@ def scrape_placement_report(driver,URLS):
             pass
         
         # Get the section HTML
-        try:
-           pgp_section = driver.find_element(By.ID, "placement_section_about_baseCourse_101")
-        except:
-            pass
+        pgp_section = driver.find_element(By.ID, "placement_section_about_baseCourse_101")
         section_html = driver.execute_script("""
             var section = arguments[0];
             return section.outerHTML;
@@ -5607,7 +5563,7 @@ def scrape_cutoff(driver, URLS):
         driver = webdriver.Chrome(options=options)
         driver.get(URLS["cutoff"])
 
-    wait = WebDriverWait(driver, 15)
+    wait = WebDriverWait(driver, 20)
     college_info = {
         "college_name": None,
         "logo": None,
@@ -6052,7 +6008,7 @@ def scrape_ranking(driver, URLS):
         driver.get(URLS["ranking"])
     
 
-    wait = WebDriverWait(driver, 15)  # Increased wait time
+    wait = WebDriverWait(driver, 40)  # Increased wait time
     
     college_info = {
         "college_name": None,
@@ -6818,24 +6774,9 @@ def scrape_ranking(driver, URLS):
     
 
     try:
-        try:
-            intl_section = wait.until(
-                EC.presence_of_element_located(
-                    (By.ID, "rp_section_international_ranking")
-                )
-            )
-            
-            # scrape ranking here
-
-        except TimeoutException:
-            print("International ranking section not found.")
-            intl_section = None
-        if intl_section:
-            driver.execute_script("arguments[0].scrollIntoView(true);", intl_section)
-            time.sleep(3) 
-        else:
-            print("Intl section not found, skipping scroll")
-        # Give extra time for loading
+        intl_section = wait.until(EC.presence_of_element_located((By.ID, "rp_section_international_ranking")))
+        driver.execute_script("arguments[0].scrollIntoView(true);", intl_section)
+        time.sleep(3)  # Give extra time for loading
         
         # Expand the section
         expand_all_sections()
@@ -6995,7 +6936,7 @@ def scrape_mini_clips(driver, URLS):
         driver.get(URLS["gallery"])
     
 
-    wait = WebDriverWait(driver, 15)
+    wait = WebDriverWait(driver, 20)
     
     college_info = {
         "college_name": None,
@@ -7523,7 +7464,7 @@ def scrape_hostel_campus_js(driver, URLS):
         driver = webdriver.Chrome(options=options)
         driver.get(URLS["infrastructure"])
     
-    wait = WebDriverWait(driver, 15)
+    wait = WebDriverWait(driver, 25)
     time.sleep(5)  # allow JS to load
     soup = BeautifulSoup(driver.page_source, "html.parser")
 
@@ -9379,8 +9320,8 @@ def scrape_mba_colleges():
 import time
 import os
 
-TEMP_FILE = "allindiambacollegedetails931_960.tmp.json"
-FINAL_FILE = "allindiambacollegedetails931_960.json"
+TEMP_FILE = "allindiambacollegedetails931_950.tmp.json"
+FINAL_FILE = "allindiambacollegedetails931_950.json"
 
 UPDATE_INTERVAL = 6 * 60 * 60  # 6 hours
 
@@ -9404,4 +9345,5 @@ def auto_update_scraper():
 
 if __name__ == "__main__":
     auto_update_scraper()
+        
         
